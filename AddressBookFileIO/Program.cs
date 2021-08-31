@@ -1,55 +1,68 @@
 ﻿using System;
 
-namespace AddressBookSystem
+namespace AddressbookusingLambda
 {
-    class AddressBookMain
+    class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello! Welcome to Address Book.");
-            Console.WriteLine("=================================\nChoose the operation:\n1.Add Contact.\n2.View Saved Contacts.\n3.Edit Existing Contact.\n4.Delete Existing Contact.\n5.Duplicate Checker.\n6.Search Person.\n7.Find City/State.\n8.Find Number Of Persons..\n9.Sort By Person Name\n10.Exit Adress Book Application.\n=================================");
-            var userInput = Console.ReadLine();
-            var addressBook = new AddressBook();
+            Console.WriteLine("Welcome to address book programs using Lambda expressions");
+
+
+            AddressBookDetails abd = new AddressBookDetails();
 
             while (true)
             {
-                switch (userInput)
+
+                Console.WriteLine("*********************************************************");
+                Console.WriteLine("1.Add member to Contact list \n2.View Members in Contact List\n3.Edit members Contacts list\n4.Delete members Contacts list\n5.Search for details\n6.View details of city or state\n7.Count by city or state\n8.Sort the list\n9.Read list from file\n10.write list from file\n11.Read from Csv file\n12.Write from csv file\n13.Exit");
+                Console.WriteLine("Enter an option:");
+                switch (Convert.ToInt32(Console.ReadLine()))
                 {
-                    case "1":
-                        addressBook.StoreContact();
+                    case 1:
+                        abd.AddMember();
                         break;
-                    case "2":
-                        addressBook.DisplayAllContact();
+                    case 2:
+                        abd.ViewContacts();
                         break;
-                    case "3":
-                        addressBook.EditContact();
+                    case 3:
+                        abd.EditDetails();
                         break;
-                    case "4":
-                        addressBook.DeleteContact();
+                    case 4:
+                        abd.DeleteDetails();
                         break;
-                    case "5":
-                        addressBook.DuplicateChecker();
+                    case 5:
+                        abd.SearchDetails();
                         break;
-                    case "6":
-                        addressBook.SearchPerson();
+                    case 6:
+                        abd.ViewDetailsByStateOrCity();
                         break;
-                    case "7":
-                        addressBook.FindCityState();
+                    case 7:
+                        abd.CountByStateOrCity();
                         break;
-                    case "8":
-                        addressBook.FindNumOfPerson();
+                    case 8:
+                        abd.SortEntries();
                         break;
-                    case "9":
-                        addressBook.ChooseSort();
+                    case 9:
+                        abd.ReadFromFile();
                         break;
-                    case "10":
-                        return;
+                    case 10:
+                        abd.WriteToFile();
+                        break;
+                    case 11:
+                        abd.ReadFromCsvFile();
+                        break;
+                    case 12:
+                        abd.WriteToCsvFile();
+                        break;
                     default:
-                        Console.WriteLine("!!! Choose valid operation !!!");
-                        break;
+                        // to exit from main method
+                        Console.WriteLine("Exited");
+                        return;
+
+
                 }
-                Console.WriteLine("=================================\nChoose the operation:\n1.Add Another Contact.\n2.View Saved Contacts.\n3.Edit Existing Contact.\n4.Delete Existing Contact.\n5.Duplicate Checker.\n6.Search Person.\n7.FindCity/State.\n8.Find Number Of Persons..\n9.Sort By Person Name.\n10.Exit Address Book Application.\n=================================");
-                userInput = Console.ReadLine();
+
             }
         }
     }

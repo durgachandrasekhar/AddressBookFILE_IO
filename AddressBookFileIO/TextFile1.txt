@@ -1,0 +1,6 @@
+FirstName,LastName,Address,City,State,ZipCode,PhoneNumber,Email
+Durga,Chintalapudi,rly quarters,vijayawada,Andhrapradesh,520001,9490212578,durgachandrasekhar3@gmail.com
+Ab-TN
+Durga,Chintalapudi,rly quarters,vijayawada,Andhrapradesh,520001,9490212578,durgachandrasekhar3@gmail.com
+bugatti
+durgachandrasekhar,chintalapudi,rly quarters,vijayawada,ap,520001,9490212578,durgachandrasekhar3@gmail.com
