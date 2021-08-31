@@ -1,0 +1,9 @@
+firstName,lastName,address,city,state,zipCode,phoneNumber,email
+durgachandrasekhar,chintalapudi,rly quarters,vijayawada,ap,520001,9490212578,durgachandrasekhar3@gmail.com
+mohanavamsi,avvula,gandhi gari bomma,tenali,ap,522210,8885333287,mohanavamsi19@gmail.com
+durgachandrasekhar,chintalapudi,rly quarters,vijayawada,ap,520001,9490212578,durgachandrasekhar3@gmail.com
+mohanavamsi,avvula,gandhi gari bomma,tenali,ap,522210,8885333287,mohanavamsi19@gmail.com
+durgachandrasekhar,chintalapudi,rly quarters,vijayawada,ap,520001,9490212578,durgachandrasekhar3@gmail.com
+mohanavamsi,avvula,gandhi gari bomma,tenali,ap,522210,8885333287,mohanavamsi19@gmail.com
+durgachandrasekhar,chintalapudi,rly quarters,vijayawada,ap,520001,9490212578,durgachandrasekhar3@gmail.com
+mohanavamsi,avvula,gandhi gari bomma,tenali,ap,522210,8885333287,mohanavamsi19@gmail.com

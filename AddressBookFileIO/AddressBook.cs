@@ -1,235 +1,792 @@
-﻿using System;
+﻿using CsvHelper;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 
-namespace AddressBookSystem
+namespace AddressbookusingLambda
 {
-    class AddressBook
+    class AddressBookDetails
     {
-        public List<Contact> List = new List<Contact>();
-        public void AddContact(Contact addcontact)
-        {
-            List.Add(addcontact);
-        }
-        public Dictionary<string, Contact> DictName = new Dictionary<string, Contact>();
+        private List<Person> contacts;
+        private static List<Person> searchContacts = new List<Person>();
+        //address book dictioanry to store values
+        private static Dictionary<string, List<Person>> addressBookDictionary = new Dictionary<string, List<Person>>();
+        private List<Person> viewContacts;
+        List<Person> SortedList = new List<Person>();
 
-        public void StoreContact()
+        public void AddMember()
         {
-            Console.WriteLine("Enter a unique name to your Addressbook:");
-            string addressbookName = Console.ReadLine();
-            Console.WriteLine("First Name:");
-            string firstname = Console.ReadLine();
-            Console.WriteLine("Last Name:");
-            string lastname = Console.ReadLine();
-            Console.WriteLine("Address:");
-            string address = Console.ReadLine();
-            Console.WriteLine("City:");
-            string city = Console.ReadLine();
-            Console.WriteLine("State:");
-            string state = Console.ReadLine();
-            Console.WriteLine("Zip Code:");
-            string zipcode = Console.ReadLine();
-            Console.WriteLine("Phone Number:");
-            string phonenumber = Console.ReadLine();
-            Console.WriteLine("Email:");
-            string email = Console.ReadLine();
-            var newContact = new Contact(firstname, lastname, address, city, state, zipcode, phonenumber, email);
-            DictName.Add(addressbookName, newContact);
-        }
-        public void DisplayAllContact()
-        {
-            foreach (var element in DictName)
+            string addressBookName;
+            contacts = new List<Person>();
+            while (true)
             {
-                Console.WriteLine("----------------\nADDRESSBOOK :\n----------------\nAddressbook Key: " + element.Key + "\nPerson's Name: " + element.Value.FirstName + " " + element.Value.LastName + "\nAddress: " + element.Value.Address + "\nCity: " + element.Value.City + "\nState: " + element.Value.State + "\nZip Code: " + element.Value.ZipCode + "\nPhone Number: " + element.Value.PhoneNumber + "\nEmail: " + element.Value.Email);
-            }
-        }
-        public void EditContact()
-        {
-            Console.WriteLine("Available Addressbooks are:: ");
-            foreach (var key in DictName)
-            {
-                Console.WriteLine(key.Key + "\n----------------");
-            }
-            Console.WriteLine("------------------\nEnter Name of the AddressBook you want to edit:: ");
-            string dictName = Console.ReadLine();
-
-            foreach (var element in DictName)
-            {
-                if (element.Key == dictName)
+                Console.WriteLine("Enter The Name of the Address Book");
+                addressBookName = Console.ReadLine();
+                //Checking uniqueness of address books
+                if (addressBookDictionary.Count > 0)
                 {
-                    Console.WriteLine("Enter new First Name");
-                    string newFirstName = Console.ReadLine();
-                    element.Value.FirstName = newFirstName;
-                    Console.WriteLine("Enter new Last Name:");
-                    string newLastName = Console.ReadLine();
-                    element.Value.LastName = newLastName;
-                    Console.WriteLine("Enter new Address:");
-                    string newAddress = Console.ReadLine();
-                    element.Value.Address = newAddress;
-                    Console.WriteLine("Enter new City:");
-                    string newCity = Console.ReadLine();
-                    element.Value.City = newCity;
-                    Console.WriteLine("Enter new State:");
-                    string newState = Console.ReadLine();
-                    element.Value.State = newState;
-                    Console.WriteLine("Enter new Zip Code:");
-                    string newZipcode = Console.ReadLine();
-                    element.Value.ZipCode = newZipcode;
-                    Console.WriteLine("Enter new Phone Number:");
-                    string newPhonenumber = Console.ReadLine();
-                    element.Value.PhoneNumber = newPhonenumber;
-                    Console.WriteLine("Enter new Email:");
-                    string newEmail = Console.ReadLine();
-                    element.Value.Email = newEmail;
-                    Console.WriteLine("---------------------------------\n!!Contact Edited!!");
-                }
-            }
-
-        }
-        public void DeleteContact()
-        {
-            Console.WriteLine("Enter First Name of the Contact you want to Delete:");
-            string name = Console.ReadLine();
-            foreach (var contact in List)
-            {
-                if (contact.FirstName == name)
-                {
-                    List.Remove(contact);
-                    Console.WriteLine("---------------------------------\n!!Contact Removed!!");
-                    break;
-                }
-            }
-        }
-        public void DuplicateChecker()
-        {
-            Console.WriteLine("Enter a unique name to your Addressbook:");
-            string addressbookName = Console.ReadLine();
-            Console.WriteLine("First Name:");
-            string name = Console.ReadLine();
-
-            foreach (var element in DictName)
-            {
-                if (element.Value.FirstName.Equals(name))
-                {
-                    Console.WriteLine("=================================\nEntered Person Name already exist in Addressbook in AddressBook::\n" + element.Key + "\n=================================");
+                    if (addressBookDictionary.ContainsKey(addressBookName))
+                    {
+                        Console.WriteLine("This name of address book already exists");
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
                 else
                 {
-                    string newName = name;
-                    Console.WriteLine("Last Name:");
-                    string lastname = Console.ReadLine();
-                    Console.WriteLine("Address:");
-                    string address = Console.ReadLine();
-                    Console.WriteLine("City:");
-                    string city = Console.ReadLine();
-                    Console.WriteLine("State:");
-                    string state = Console.ReadLine();
-                    Console.WriteLine("Zip Code:");
-                    string zipcode = Console.ReadLine();
-                    Console.WriteLine("Phone Number:");
-                    string phonenumber = Console.ReadLine();
-                    Console.WriteLine("Email:");
-                    string email = Console.ReadLine();
-                    var newContact = new Contact(newName, lastname, address, city, state, zipcode, phonenumber, email);
-                    DictName.Add(addressbookName, newContact);
-                    Console.WriteLine("=================================\nDuplicate checker passed contact added successfully.\n=================================");
+                    break;
+                }
+
+            }
+
+            Console.Write("Enter Number of contacts you want to add:");
+            int numOfContacts = Convert.ToInt32(Console.ReadLine());
+            while (numOfContacts > 0)
+            {
+                //object for person class
+                Person person = new Person();
+                while (true)
+                {
+                    Console.Write("Enter First Name: ");
+                    string firstName = Console.ReadLine();
+                    if (contacts.Count > 0)
+                    {
+                        var x = contacts.Find(x => x.firstName.Equals(firstName));
+                        if (x != null)
+                        {
+                            Console.WriteLine("Your name  already exists");
+                        }
+                        else
+                        {
+                            person.firstName = firstName;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        person.firstName = firstName;
+                        break;
+                    }
+
+                }
+
+                Console.Write("Enter Last Name: ");
+                person.lastName = Console.ReadLine();
+                Console.Write("Enter Address: ");
+                person.address = Console.ReadLine();
+                Console.Write("Enter City: ");
+                person.city = Console.ReadLine();
+                Console.Write("Enter State: ");
+                person.state = Console.ReadLine();
+                Console.Write("Enter Zip Code: ");
+                person.zipCode = Convert.ToInt32(Console.ReadLine());
+
+                //verification for phone number 
+                while (true)
+                {
+                    Console.Write("Enter Phone Number: ");
+                    string phNo = Console.ReadLine();
+                    if (phNo.Length == 10)
+                    {
+                        person.phoneNumber = phNo;
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Enter Valid Phone Number. It should Contains 10 digits");
+                    }
+                }
+                //verification for email id
+                while (true)
+                {
+                    Console.Write("Enter Email-id: ");
+                    string emailId = Console.ReadLine();
+                    if (emailId.Contains("@"))
+                    {
+                        person.email = emailId;
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Enter Valid Email Id. It should Contains @ ");
+                    }
+                }
+                //
+                contacts.Add(person);
+                Console.WriteLine("***************************************");
+
+                numOfContacts--;
+            }
+            //adding into address book dictionary
+            addressBookDictionary.Add(addressBookName, contacts);
+            Console.WriteLine("**************Successfully Added****************");
+        }
+
+        //method for view Contacts
+        public void ViewContacts()
+        {
+            if (addressBookDictionary.Count > 0)
+            {
+                //printing the values in address book
+                foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                {
+                    Console.WriteLine("*****************************************************");
+                    Console.WriteLine($"******************{dict.Key}*********************");
+                    Console.WriteLine("*****************************************************");
+                    foreach (var addressBook in dict.Value)
+                    {
+                        PrintValues(addressBook);
+
+                    }
                 }
             }
-        }
-        public void SearchPerson()
-        {
-            Console.WriteLine("Enter City or State to search person::");
-            string city = Console.ReadLine();
-            foreach (var element in DictName)
+            else
             {
-                if (element.Value.City.Equals(city))
+                Console.WriteLine("Address Book is Empty");
+            }
+
+        }
+
+        //Printing values
+        public void PrintValues(Person x)
+        {
+            Console.WriteLine($"First Name : {x.firstName}");
+            Console.WriteLine($"Last Name : {x.lastName}");
+            Console.WriteLine($"Address : {x.address}");
+            Console.WriteLine($"City : {x.city}");
+            Console.WriteLine($"State : {x.state}");
+            Console.WriteLine($"Zip Code: {x.zipCode}");
+            Console.WriteLine($"Phone Number: {x.phoneNumber}");
+            Console.WriteLine($"Email: {x.email}");
+            Console.WriteLine("********|||||||||||********");
+        }
+
+        //method for editing details
+        public void EditDetails()
+        {
+            int f;//flag variable
+            if (contacts.Count > 0)
+            {
+                Console.Write("Enter name of a person you want to edit: ");
+                string editName = Console.ReadLine();
+
+                foreach (var x in contacts)
                 {
-                    Console.WriteLine("Contact(s) in found in " + city + ":: " + element.Value.FirstName);
+                    if (editName.ToLower() == x.firstName.ToLower())
+                    {
+                        while (true)
+                        {
+                            f = 0;
+                            Console.WriteLine("1.First name\n2.Last name\n3.Address\n4.City\n5.State\n6.ZipCode\n7.Phone Number\n8.email\n9.Exit");
+                            Console.WriteLine("Enter Option You want to edit");
+                            switch (Convert.ToInt32(Console.ReadLine()))
+                            {
+                                case 1:
+                                    Console.WriteLine("Enter New First name");
+                                    x.firstName = Console.ReadLine();
+                                    Console.WriteLine("\t\t\t\tMODIFIED");
+                                    break;
+                                case 2:
+                                    Console.WriteLine("Enter New Last name");
+                                    x.lastName = Console.ReadLine();
+                                    Console.WriteLine("\t\t\t\tMODIFIED");
+                                    break;
+                                case 3:
+                                    Console.WriteLine("Enter New Address");
+                                    x.address = Console.ReadLine();
+                                    Console.WriteLine("\t\t\t\tMODIFIED");
+                                    break;
+                                case 4:
+                                    Console.WriteLine("Enter New City");
+                                    x.city = Console.ReadLine();
+                                    Console.WriteLine("\t\t\t\tMODIFIED");
+                                    break;
+                                case 5:
+                                    Console.WriteLine("Enter New State");
+                                    x.state = Console.ReadLine();
+                                    Console.WriteLine("\t\t\t\tMODIFIED");
+                                    break;
+                                case 6:
+                                    Console.WriteLine("Enter New Zip Code");
+                                    x.zipCode = Convert.ToInt32(Console.ReadLine());
+                                    Console.WriteLine("\t\t\t\tMODIFIED");
+                                    break;
+                                case 7:
+                                    //validation for phone number
+                                    while (true)
+                                    {
+                                        Console.Write("Enter new Phone Number: ");
+                                        string phNo = Console.ReadLine();
+                                        if (phNo.Length == 10)
+                                        {
+                                            x.phoneNumber = phNo;
+                                            Console.WriteLine("\t\t\t\tMODIFIED");
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Enter Valid Phone Number. It should Contains 10 digits");
+                                        }
+                                    }
+                                    break;
+                                case 8:
+                                    //validation for email id
+                                    while (true)
+                                    {
+                                        Console.Write("Enter new Email-id: ");
+                                        string emailId = Console.ReadLine();
+                                        if (emailId.Contains("@"))
+                                        {
+                                            x.email = emailId;
+                                            Console.WriteLine("\t\t\t\tMODIFIED");
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Enter Valid Email Id. It should Contains @ ");
+                                        }
+                                    }
+                                    break;
+                                case 9:
+                                    // to exit from main method
+                                    Console.WriteLine("Exited");
+                                    f = 1;
+                                    break;
+
+                            }
+                            if (f == 1)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Entered name is not in Contact list");
+                    }
                 }
-                else if (element.Value.State.Equals(city))
+            }
+            else
+            {
+                Console.WriteLine("Your contact list is empty");
+            }
+        }
+
+        //method for deleting conatcts
+        public void DeleteDetails()
+        {
+            int f = 0;
+            Console.Write("Enter name of a Address Book in which you want to Delete a person: ");
+            string deleteAbName = Console.ReadLine();
+            Console.Write("Enter name of a person you want to Delete: ");
+            string deleteName = Console.ReadLine();
+            if (addressBookDictionary.Count > 0)
+            {
+                if (addressBookDictionary.ContainsKey(deleteAbName))
                 {
-                    Console.WriteLine("Contact(s) in found in " + city + ":: " + element.Value.FirstName);
+                    foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                    {
+                        if (dict.Key.Equals(deleteAbName))
+                        {
+                            foreach (var x in dict.Value)
+                            {
+                                if (deleteName.ToLower() == x.firstName.ToLower())
+                                {
+                                    //removing from list
+                                    Console.WriteLine("\t\t\t\tDELETED");
+                                    Console.WriteLine($"You have deleted {x.firstName} contact");
+                                    dict.Value.Remove(x);
+                                    f = 1;
+                                    break;
+                                }
+                            }
+                            if (f == 0)
+                            {
+                                Console.WriteLine("The name you have entered not in the address book");
+                            }
+                        }
+
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("No such City or State stored in your addressbook.\nAvailable city and states are ::\n Cites:: " + element.Value.City + "\nStates:: " + element.Value.State);
+                    Console.WriteLine("Address Book is not found");
                 }
+
+
             }
-        }
-        public void FindCityState()
-        {
-            Console.WriteLine("Enter First Name of a Person to View his City and State::");
-            string person = Console.ReadLine();
-            foreach (var element in DictName)
+            else
             {
-                if (element.Value.FirstName.Equals(person))
-                {
-                    Console.WriteLine("\n" + person + " lives in :: '" + element.Value.City + "' City and '" + element.Value.State + "' State.\n");
-                }
-                else
-                {
-                    Console.WriteLine("No such Person found in Addressbook.\n\nAvailable person in your addressbook are :: " + element.Value.FirstName + "\n");
-                }
+                Console.WriteLine("Adress book is empty");
             }
+
+
+
         }
-        public void FindNumOfPerson()
+
+        public void SearchDetails()
         {
-            Console.WriteLine("Enter City or State ::");
-            string cityState = Console.ReadLine();
-            int countPerson = 0;
-            foreach (var element in DictName)
+            string personName;
+            Console.WriteLine("1. Search by city name\n2.Search By state name\nEnter your option:");
+            switch (Convert.ToInt32(Console.ReadLine()))
             {
-                if (element.Value.City.Equals(cityState))
-                {
-                    countPerson++;
-                }
-                if (element.Value.State.Equals(cityState))
-                {
-                    countPerson++;
-                }
-            }
-            Console.WriteLine("\nNumber of Person found in " + cityState + " are " + countPerson);
-        }
-        public void ChooseSort()
-        {
-            Console.WriteLine("Sort By:-");
-            Console.WriteLine("1.Name\n2.City\n3.State\n4.ZipCode");
-            var choice = Console.ReadLine();
-            switch (choice)
-            {
-                case "1":
-                    Dictionary<string, Contact> sortList = DictName.OrderBy(x => x.Value.FirstName).ToDictionary(x => x.Key, x => x.Value);
-                    foreach (var element in sortList)
-                    {
-                        Console.WriteLine(element.Value.FirstName + " " + element.Value.LastName + " " + element.Value.PhoneNumber);
-                    }
+                case 1:
+                    Console.WriteLine("Enter the name of city in which you want to search:");
+                    string cityName = Console.ReadLine();
+                    Console.WriteLine("Enter the name of person you want to search:");
+                    personName = Console.ReadLine();
+                    SearchByCityName(cityName, personName);
                     break;
-                case "2":
-                    Dictionary<string, Contact> sortCity = DictName.OrderBy(x => x.Value.City).ToDictionary(x => x.Key, x => x.Value);
-                    foreach (var element in sortCity)
-                    {
-                        Console.WriteLine(element.Value.FirstName + " " + element.Value.LastName + " " + element.Value.City + " " + element.Value.PhoneNumber);
-                    }
-                    break;
-                case "3":
-                    Dictionary<string, Contact> sortState = DictName.OrderBy(x => x.Value.State).ToDictionary(x => x.Key, x => x.Value);
-                    foreach (var element in sortState)
-                    {
-                        Console.WriteLine(element.Value.FirstName + " " + element.Value.LastName + " " + element.Value.State + " " + element.Value.PhoneNumber);
-                    }
-                    break;
-                case "4":
-                    Dictionary<string, Contact> sortZip = DictName.OrderBy(x => x.Value.ZipCode).ToDictionary(x => x.Key, x => x.Value);
-                    foreach (var element in sortZip)
-                    {
-                        Console.WriteLine(element.Value.FirstName + " " + element.Value.LastName + " " + element.Value.State + " " + element.Value.ZipCode + " " + element.Value.PhoneNumber);
-                    }
+                case 2:
+                    Console.WriteLine("Enter the state of city in which you want to search:");
+                    string stateName = Console.ReadLine();
+                    Console.WriteLine("Enter the name of person you want to search:");
+                    personName = Console.ReadLine();
+                    SearchByStateName(stateName, personName);
                     break;
                 default:
-                    Console.WriteLine("=================================\n!!! Choose valid operation !!!\n=================================");
-                    break;
+                    return;
+
             }
+
+        }
+        public void ViewDetailsByStateOrCity()
+        {
+
+            Console.WriteLine("1. View by city name\n2.View By state name\nEnter your option:");
+            switch (Convert.ToInt32(Console.ReadLine()))
+            {
+                case 1:
+                    Console.WriteLine("Enter the name of city in which you want to view:");
+                    string cityName = Console.ReadLine();
+                    ViewByCityName(cityName, "count");
+                    break;
+                case 2:
+                    Console.WriteLine("Enter the state of city in which you want to view:");
+                    string stateName = Console.ReadLine();
+                    ViewByStateName(stateName, "count");
+                    break;
+                default:
+                    return;
+
+            }
+
+        }
+        public void CountByStateOrCity()
+        {
+
+            Console.WriteLine("1.Count by city name\n2.Count By state name\nEnter your option:");
+            switch (Convert.ToInt32(Console.ReadLine()))
+            {
+                case 1:
+                    Console.WriteLine("Enter the name of city in which you want to count persons:");
+                    string cityName = Console.ReadLine();
+                    ViewByCityName(cityName, "count");
+                    break;
+                case 2:
+                    Console.WriteLine("Enter the name of state in which you want to count persons:");
+                    string stateName = Console.ReadLine();
+                    ViewByStateName(stateName, "count");
+                    break;
+                default:
+                    return;
+
+            }
+
+        }
+
+        public void ViewByCityName(string cityName, string count)
+        {
+            if (addressBookDictionary.Count > 0)
+            {
+
+                foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                {
+                    viewContacts = dict.Value.FindAll(x => x.state.Equals(cityName));
+                }
+                if (searchContacts.Count > 0)
+                {
+                    foreach (var x in searchContacts)
+                    {
+                        PrintValues(x);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No Persons found");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Adress book is empty");
+            }
+        }
+        public void ViewByStateName(string stateName, string count)
+        {
+            if (addressBookDictionary.Count > 0)
+            {
+
+                foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                {
+                    viewContacts = dict.Value.FindAll(x => x.state.Equals(stateName));
+                }
+                if (searchContacts.Count > 0)
+                {
+                    foreach (var x in searchContacts)
+                    {
+                        PrintValues(x);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No Persons found");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Adress book is empty");
+            }
+        }
+
+        public void SearchByCityName(string cityName, string personName)
+        {
+            if (addressBookDictionary.Count > 0)
+            {
+
+                foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                {
+                    searchContacts = dict.Value.FindAll(x => x.firstName.Equals(personName) && x.state.Equals(cityName));
+
+
+                }
+                if (searchContacts.Count > 0)
+                {
+                    foreach (var x in searchContacts)
+                    {
+                        PrintValues(x);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Person not found");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Adress book is empty");
+            }
+        }
+        public void SearchByStateName(string stateName, string personName)
+        {
+            if (addressBookDictionary.Count > 0)
+            {
+
+                foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                {
+                    searchContacts = dict.Value.FindAll(x => x.firstName.Equals(personName) && x.state.Equals(stateName));
+
+                }
+                if (searchContacts.Count > 0)
+                {
+                    foreach (var x in searchContacts)
+                    {
+                        PrintValues(x);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Person not found");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Adress book is empty");
+            }
+
+        }
+        public void SortEntries()
+        {
+            Console.WriteLine("1.Sort by person name\n2.Sort by city name\n3.Sort by state name\n4.Sort by zipcode\nEnter Your option");
+            switch (Convert.ToInt32(Console.ReadLine()))
+            {
+                case 1:
+                    SortList("name");
+                    break;
+                case 2:
+                    SortList("city");
+                    break;
+                case 3:
+                    SortList("state");
+                    break;
+                case 4:
+                    SortList("zipcode");
+                    break;
+
+            }
+        }
+
+        public void SortList(string check)
+        {
+            if (addressBookDictionary.Count > 0)
+            {
+
+                //printing the values in address book
+                foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                {
+                    switch (check)
+                    {
+                        case "name":
+                            //sorting list based on first name
+                            SortedList = dict.Value.OrderBy(x => x.firstName).ToList();
+                            break;
+                        case "city":
+                            SortedList = dict.Value.OrderBy(x => x.city).ToList();
+                            break;
+                        case "state":
+                            SortedList = dict.Value.OrderBy(x => x.state).ToList();
+                            break;
+                        case "zipcode":
+                            SortedList = dict.Value.OrderBy(x => x.zipCode).ToList();
+                            break;
+                    }
+
+                    Console.WriteLine($"**********AFTER SORTING {dict.Key}**********");
+                    foreach (var addressBook in SortedList)
+                    {
+                        PrintValues(addressBook);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Address Book is Empty");
+            }
+
+        }
+        public void ReadFromFile()
+        {
+            string filePath = @"C:\Users\SHIVA KUMAR\source\repos\AddressBookFileIO\AddressBookFileIO\Details.txt";
+
+            try
+            {
+                string[] fileContents = File.ReadAllLines(filePath);
+                var currentAbName = fileContents[0];
+                contacts = new List<Person>();
+                foreach (string i in fileContents.Skip(1))
+                {
+                    if (i.Contains(","))
+                    {
+                        Person person = new Person();
+                        string[] line = i.Split(",");
+                        person.firstName = line[0];
+                        person.lastName = line[1];
+                        person.address = line[2];
+                        person.city = line[3];
+                        person.state = line[4];
+                        person.zipCode = Convert.ToInt32(line[5]);
+                        person.phoneNumber = line[6];
+                        person.email = line[7];
+                        contacts.Add(person);
+                    }
+                    else
+                    {
+                        addressBookDictionary.Add(currentAbName, contacts);
+                        currentAbName = i;
+                        contacts = new List<Person>();
+                    }
+
+
+                }
+                addressBookDictionary.Add(currentAbName, contacts);
+                Console.WriteLine("SuccessFully Added");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+
+        public void WriteToFile()
+        {
+            string filePath = @"C:\Users\SHIVA KUMAR\source\repos\AddressBookFileIO\AddressBookFileIO\Details.txt";
+
+            try
+            {
+                if (addressBookDictionary.Count > 0)
+                {
+                    File.WriteAllText(filePath, string.Empty);
+                    //printing the values in address book
+                    foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                    {
+                        File.AppendAllText(filePath, $"{dict.Key}\n");
+                        foreach (var addressBook in dict.Value)
+                        {
+                            string text = $"{addressBook.firstName},{addressBook.lastName},{addressBook.address},{addressBook.city},{addressBook.state},{addressBook.zipCode},{addressBook.phoneNumber},{addressBook.email}\n";
+                            File.AppendAllText(filePath, text);
+                        }
+                    }
+                    Console.WriteLine("successfully stored in file");
+                }
+                else
+                {
+                    Console.WriteLine("Address Book is Empty");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+        public void ReadFromCsvFile()
+        {
+            //File path
+            string filePath = @"C:\Users\SHIVA KUMAR\source\repos\AddressBookFileIO\AddressBookFileIO\Details.txt";
+            try
+            {
+                string abName = "Ab-TN";
+                if (File.Exists(filePath))
+                {
+                    //Stream reader for reading from csv file
+                    using (var reader = new StreamReader(filePath))
+                    using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                    {
+                        //fetching records from csv files
+                        var csvContactsList = csv.GetRecords<Person>().ToList();
+                        addressBookDictionary.Add(abName, csvContactsList);
+                        Console.WriteLine("Successfully Added from file");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+        }
+        /// <summary>
+        /// Write records to csv file
+        /// </summary>
+        public void WriteToCsvFile()
+        {
+            //File path of csv file
+            string filePath = @"C:\Users\SHIVA KUMAR\source\repos\AddressBookFileIO\AddressBookFileIO\Details.txt";
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    if (addressBookDictionary.Count > 0)
+                    {
+                        //initially clear the file
+                        File.WriteAllText(filePath, string.Empty);
+                        //stream writer to write files
+                        using (var writer = new StreamWriter(filePath))
+                        using (var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                        {
+                            foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                            {
+                                foreach (var addressBook in dict.Value)
+                                {
+                                    contacts = new List<Person>();
+                                    contacts.Add(addressBook);
+                                    //write records into csv file
+                                    csvWriter.WriteRecords(contacts);
+                                }
+                            }
+                        }
+                        Console.WriteLine("Records Written into csv file");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Address Book is Empty");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+        }
+        public void ReadFromJsonFile()
+        {
+            string filePath = @"C:\Users\SHIVA KUMAR\source\repos\AddressBookFileIO\AddressBookFileIO\Details.JSON";
+            try
+            {
+                string abName = "AB-bhagi";
+                if (File.Exists(filePath))
+                {
+                    // convert json records to list
+                    List<Person> jsonList = JsonConvert.DeserializeObject<List<Person>>(File.ReadAllText(filePath));
+                    addressBookDictionary.Add(abName, jsonList);
+                    Console.WriteLine("Data added succesfully");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+
+
+        }
+        /// <summary>
+        /// Write records into json file
+        /// </summary>
+        public void WriteToJsonFile()
+        {
+            string filePath = @"C:\Users\SHIVA KUMAR\source\repos\AddressBookFileIO\AddressBookFileIO\Details.JSON";
+            try
+            {
+
+                if (addressBookDictionary.Count > 0)
+                {
+                    //initially clear the file
+                    File.WriteAllText(filePath, string.Empty);
+
+                    //Initialising json serializer
+                    JsonSerializer serializer = new JsonSerializer();
+                    using (StreamWriter writer = new StreamWriter(filePath))
+                    using (JsonWriter jsonWriter = new JsonTextWriter(writer))
+                    {
+                        foreach (KeyValuePair<string, List<Person>> dict in addressBookDictionary)
+                        {
+                            //initialising contacts list
+                            contacts = new List<Person>();
+                            foreach (var addressBook in dict.Value)
+                            {
+
+                                contacts.Add(addressBook);
+
+                            }
+                            //write records into json file
+                            serializer.Serialize(jsonWriter, contacts);
+                        }
+                    }
+                    Console.Write("Records Written into json file");
+                }
+                else
+                {
+                    Console.Write("Address Book is Empty");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.Write($"Exception: {ex.Message}");
+            }
+
+
         }
     }
 }
