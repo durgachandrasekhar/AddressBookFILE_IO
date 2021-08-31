@@ -40,7 +40,7 @@ namespace AddressBookSystem
                         addressBook.FindNumOfPerson();
                         break;
                     case "9":
-                        addressBook.SortByPersonName();
+                        addressBook.ChooseSort();
                         break;
                     case "10":
                         return;
